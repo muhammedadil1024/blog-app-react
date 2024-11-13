@@ -1,83 +1,99 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 import { Typography } from "antd";
-import db from '../firebaseConfig'
+import db from "../firebaseConfig";
 import { collection, onSnapshot } from "firebase/firestore";
-import PostSnippet from './PostSnippet';
+import PostSnippet from "./PostSnippet";
 import "../App.css";
+import toast, { Toaster } from "react-hot-toast";
 
 const { Title } = Typography;
 
-const Posts = (props) => {
-
-    // const [user, setUser] = useState(null);
+const Posts = ({ user }) => {
     const [posts, setPosts] = useState([]);
-
-    // if any error had uncomment the useEffect below
-
-    // useEffect(() => {
-    //     console.log(props.user);
-    //     // Update user state when props.user changes
-    //     setUser(props.user);
-    // }, [props.user]);
+    const [userPosts, setUserPosts] = useState([]);
 
     useEffect(() => {
-        // console.log("User in useEffect:", user);
-        // console.log("User UID in useEffect:", user?.uid);
-
+        // Fetch all posts
         const fetchPosts = () => {
-            // Check if user and user.uid are defined
-            // if (user && user.uid) {
+            const path = "posts";
+            onSnapshot(
+                collection(db, path),
+                (snapshot) => {
+                    const allPosts = snapshot.docs.map((doc) => ({
+                        id: doc.id,
+                        ...doc.data(),
+                    }));
+                    setPosts(allPosts);
+                },
+                (error) => {
+                    toast.error("Error fetching posts ", error);
+                }
+            );
+        };
 
-                // let userId = props?.user.uid ? props?.user.uid : props.uid;
-                const path = props?.user.uid ? `users/${props.user.uid}/posts` : "posts"
-
+        // Fetch user-specific posts if authenticated
+        const fetchUserPosts = () => {
+            if (user?.uid) {
+                const userPostsPath = `users/${user?.uid}/posts`;
                 onSnapshot(
-                    collection(db, path),
-                    async (posts) => {
-                        let postData = await posts.docs.map((post) => {
-                            let data = post.data();
-                            let { id } = post;
-
-                            let loadedData = {
-                                id,
-                                ...data,
-                            };
-                            return loadedData;
-                        });
-
-                        setPosts(postData);
+                    collection(db, userPostsPath),
+                    (userPostsSnapshot) => {
+                        const userPosts = userPostsSnapshot.docs.map((doc) => ({
+                            id: doc.id,
+                            ...doc.data(),
+                        }));
+                        setUserPosts(userPosts);
                     },
                     (error) => {
-                        console.error("Error fetching posts:", error); // Log any errors that might occur during fetching
+                        toast.error("Error fetching user posts ", error.message);
                     }
                 );
-            // } else {
-                // console.error("User or user.uid is undefined");
-            // }
+            }
         };
+
         fetchPosts();
-        // if you use user state, make sure you add the dependency as user
-    }, [ props.user.uid, props.uid]);
+        fetchUserPosts();
+    }, [user?.uid]);
 
     return (
         <div className="post-container">
+            <Toaster />
+            {user?.uid && (
+                <>
+                    <div className="title">
+                        <Title>Your Blog Posts</Title>
+                    </div>
+                    <div className="articles">
+                        {userPosts.map((post) => (
+                            <PostSnippet
+                                key={post.id}
+                                id={post.id}
+                                title={post.title}
+                                content={post.content.substring(0, 600)}
+                                user={user}
+                                authorId={user?.uid} 
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
             <div className="title">
                 <Title>Blog Posts</Title>
             </div>
             <div className="articles">
-                {posts.map((post, idx) => (
+                {posts.map((post) => (
                     <PostSnippet
-                        key={idx}
+                        key={post.id}
                         id={post.id}
                         title={post.title}
-                        content={post.content.substring(1, 600)}
-                        user={props.user}
-                        uid={props.uid}
+                        content={post.content.substring(0, 600)}
+                        user={user}
+                        authorId={post.authorId} 
                     />
                 ))}
             </div>
         </div>
     );
-}
+};
 
-export default Posts
+export default Posts;

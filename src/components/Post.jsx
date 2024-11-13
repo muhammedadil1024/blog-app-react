@@ -8,49 +8,47 @@ import "../App.css";
 
 const { Title } = Typography;
 
-const Post = (props) => {
+const Post = ({ user }) => {
 
-  const postId = useParams();
-  
-  const [title, setTitle] = useState('')
-
-  const [content, setContent] = useState('')
-
-  useEffect(() => {
-
-    const path = props?.user.uid ? `users/${props.user.uid}/posts` : "posts";
-
-    const fetchedPost = async () => {
-      const postRef = doc(db, path, postId.id);
-      // retrieving single post from database
-      const docSnap = await getDoc(postRef);
-
-      if (docSnap.exists()) {
-          let { content, title } = docSnap.data();
-          setTitle(title);
-          setContent(content);
-      } else {
-          // docSnap.data() will be undefined in this case
-          console.log("No such document!");
-      }
-    }
-    fetchedPost();
+    const postId = useParams();
     
-  })
-  
+    const [title, setTitle] = useState('')
 
-  return (
-      <div className="post-container">
-          <div className="title">
-              <Title className='post-title'>{title}</Title>
-          </div>
-          <div className="articles">
-            <Card style={{ marginTop: '20px' }}>
-                <p>{content}</p>
-            </Card>
-          </div>
-      </div>
-  );
+    const [content, setContent] = useState('')
+
+    useEffect(() => {
+        const path = user?.uid ? `users/${user?.uid}/posts` : "posts";
+
+        const fetchedPost = async () => {
+            const postRef = doc(db, path, postId.id);
+            // retrieving single post from database
+            const docSnap = await getDoc(postRef);
+
+            if (docSnap.exists()) {
+                let { content, title } = docSnap.data();
+                setTitle(title);
+                setContent(content);
+            } else {
+                // docSnap.data() will be undefined in this case
+                alert("No such document!");
+            }
+        };
+        fetchedPost();
+    }, [postId.id, user?.uid]);
+    
+
+    return (
+        <div className="post-container">
+            <div className="title">
+                <Title className='post-title'>{title}</Title>
+            </div>
+            <div className="articles">
+                <Card style={{ marginTop: '20px' }}>
+                    <p>{content}</p>
+                </Card>
+            </div>
+        </div>
+    );
 }
 
 export default Post
