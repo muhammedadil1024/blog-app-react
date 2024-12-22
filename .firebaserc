@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "react-blog-39fe0"
-  }
+    "default": "react-blog-39fe0",
+    "react-blog": "react-blog-39fe0"
+  },
+  "targets": {},
+  "etags": {}
 }

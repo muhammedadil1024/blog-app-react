@@ -22,4 +22,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .dist
-.firebaseConfig.js
+.firebaserc
+.firebase.json
+.env
