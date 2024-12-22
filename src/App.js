@@ -75,7 +75,7 @@ function App() {
                     <Route path="signin" element={<SignIn />} />
                 </Routes>
             </BrowserRouter>
-            <div className="copyright">&copy; Muhammed Adil 2024</div>
+            <div className="copyright">&copy; Muhammed Adil {new Date().getFullYear()}</div>
         </div>
     );
 }
